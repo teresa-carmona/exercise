@@ -8,13 +8,16 @@ import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -34,7 +37,15 @@ public class NaceService {
         return naceRepository.findAll(pageable);
     }
 
+    @Async("fileProcessingExecutor")
+    public CompletableFuture<Void> processExcelAsync(MultipartFile file) throws IOException {
+        saveFromExcel(file);
+        return CompletableFuture.completedFuture(null);
+    }
 
+
+
+    @Transactional
     public void saveFromExcel(MultipartFile file) throws IOException {
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -80,6 +91,7 @@ public class NaceService {
                 log.error(fe.getMessage(), fe);
                 throw fe;
             }
+            log.info("Data successfully saved!");
         }
     }
 

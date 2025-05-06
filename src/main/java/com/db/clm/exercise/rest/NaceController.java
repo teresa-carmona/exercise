@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/nace")
 @Tag(name = "NACE elements", description = "Persists and retrieves NACE data")
@@ -21,16 +23,18 @@ public class NaceController {
     @Autowired
     private NaceService naceService;
 
+
     @Operation(summary = "Persists data from an Excel file")
     @PutMapping("/save")
-    public ResponseEntity<String> putNaceDetails(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> putNaceDetailsAsync(@RequestParam MultipartFile file) {
         try {
-            naceService.saveFromExcel(file);
-            return ResponseEntity.ok("Data successfully saved");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error processing CSV file: " + e.getMessage());
+            naceService.processExcelAsync(file);
+            return ResponseEntity.accepted().body("Uploading file... Please check logs for completion");
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Error processing file: " + e.getMessage());
         }
     }
+
 
     @Operation(summary = "Gets NACE details from code")
     @GetMapping("/{id}")
