@@ -5,6 +5,7 @@ import com.db.clm.exercise.model.Nace;
 import com.db.clm.exercise.repository.NaceRepository;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @Service
+@Slf4j
 public class NaceService {
 
     private static final int BATCH_SIZE = 500;
@@ -65,7 +67,7 @@ public class NaceService {
     }
 
 
-    public Nace readNace(String id) {
+    public Nace readNace(int id) {
         return naceRepository.findById(id).orElse(null);
     }
 
@@ -94,41 +96,52 @@ public class NaceService {
             Sheet sheet = workbook.getSheetAt(0);
             List<Nace> batch = new ArrayList<>(BATCH_SIZE);
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) { // skip header
-                Row row = sheet.getRow(i);
-                if (row == null) continue;
+            try {
 
-                Nace nace = Nace.builder()
-                        .order(getCellValueString(row.getCell(0)))
-                        .level(getCellValueInt(row.getCell(1)))
-                        .code(getCellValueString(row.getCell(2)))
-                        .parent(getCellValueString(row.getCell(3)))
-                        .description(getCellValueString(row.getCell(4)))
-                        .includes(getCellValueString(row.getCell(5)))
-                        .alsoIncludes(getCellValueString(row.getCell(6)))
-                        .excludes(getCellValueString(row.getCell(7)))
-                        .rulings(getCellValueString(row.getCell(8)))
-                        .reference(getCellValueString(row.getCell(9)))
-                        .build();
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) { // skip header
+                    Row row = sheet.getRow(i);
+                    if (row == null) continue;
 
-                batch.add(nace);
+                    Nace nace = Nace.builder()
+                            .order(getCellValueInt(row.getCell(0)))
+                            .level(getCellValueInt(row.getCell(1)))
+                            .code(getCellValueString(row.getCell(2)))
+                            .parent(getCellValueString(row.getCell(3)))
+                            .description(getCellValueString(row.getCell(4)))
+                            .includes(getCellValueString(row.getCell(5)))
+                            .alsoIncludes(getCellValueString(row.getCell(6)))
+                            .rulings(getCellValueString(row.getCell(7)))
+                            .excludes(getCellValueString(row.getCell(8)))
+                            .reference(getCellValueString(row.getCell(9)))
+                            .build();
 
-                if (batch.size() >= BATCH_SIZE) {
-                    naceRepository.saveAll(batch);
-                    batch.clear();
+                    batch.add(nace);
+
+                    if (batch.size() >= BATCH_SIZE) {
+                        naceRepository.saveAll(batch);
+                        batch.clear();
+                    }
                 }
-            }
 
-            if (!batch.isEmpty()) {
-                naceRepository.saveAll(batch);
+                if (!batch.isEmpty()) {
+                    naceRepository.saveAll(batch);
+                }
+            } catch(FileException fe) {
+                log.error(fe.getMessage(), fe);
+                throw fe;
             }
         }
     }
 
     private String getCellValueString(Cell cell) {
         if (cell == null) return null;
-        if (CellType.STRING == cell.getCellType()) return cell.getStringCellValue().trim();
-        else throw new FileException("Expected cell type STRING but was " + cell.getCellType().toString());
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue().trim();
+            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
+            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            case FORMULA -> cell.getCellFormula();
+            default -> "";
+        };
     }
 
     private Integer getCellValueInt(Cell cell) {

@@ -22,7 +22,7 @@ class NaceRepositoryTest {
     @Test
     void saveAndFindByIdTest() {
         Nace nace = Nace.builder()
-                .order("1")
+                .order(1)
                 .level(2)
                 .code("123")
                 .parent("parent")
@@ -36,10 +36,10 @@ class NaceRepositoryTest {
 
         naceRepository.save(nace);
 
-        Optional<Nace> result = naceRepository.findById("1");
+        Optional<Nace> result = naceRepository.findById(1);
         assertTrue(result.isPresent());
         Nace foundNace = result.get();
-        assertEquals("1", foundNace.getOrder());
+        assertEquals(1, foundNace.getOrder());
         assertEquals(2, foundNace.getLevel());
         assertEquals("123", foundNace.getCode());
         assertEquals("parent", foundNace.getParent());
@@ -53,7 +53,7 @@ class NaceRepositoryTest {
 
     @Test
     void FindByIdWhenEmptyTest() {
-        Optional<Nace> result = naceRepository.findById("XYZ");
+        Optional<Nace> result = naceRepository.findById(99);
         assertFalse(result.isPresent());
     }
 }

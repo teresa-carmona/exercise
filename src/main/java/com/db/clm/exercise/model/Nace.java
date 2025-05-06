@@ -1,6 +1,7 @@
 package com.db.clm.exercise.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -8,7 +9,6 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import com.opencsv.bean.CsvBindByName;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -20,54 +20,53 @@ import lombok.NoArgsConstructor;
 public class Nace {
 
     @Id
-//    @CsvBindByName(column = "Order")
     @Column(name = "ORDER_ID")
     @JsonProperty("order")
-    private String order;
+    private int order;
 
-//    @CsvBindByName(column = "Level")
     @Column(name = "LEVEL")
     @JsonProperty("level")
+    @Nullable
     private int level;
 
-//    @CsvBindByName(column = "Code")
     @Column(name = "CODE")
     @JsonProperty("code")
+    @Nullable
     private String code;
 
-//    @CsvBindByName(column = "Parent")
     @Column(name = "PARENT")
     @JsonProperty("parent")
+    @Nullable
     private String parent;
 
-//    @CsvBindByName(column = "Description")
     @Column(name = "DESCR")
     @JsonProperty("description")
+    @Nullable
     private String description;
 
-//    @CsvBindByName(column = "This item includes")
-    @Column(name = "INCL")
+    @Column(name = "INCL", columnDefinition = "TEXT")
     @JsonProperty("includes")
+    @Nullable
     private String includes;
 
-//    @CsvBindByName(column = "This item also includes")
-    @Column(name = "ALSO_INCL")
+    @Column(name = "ALSO_INCL", columnDefinition = "TEXT")
     @JsonProperty("also-includes")
+    @Nullable
     private String alsoIncludes;
 
-//    @CsvBindByName(column = "This item excludes")
-    @Column(name = "EXCL")
+    @Column(name = "EXCL", columnDefinition = "TEXT")
     @JsonProperty("excludes")
+    @Nullable
     private String excludes;
 
-//    @CsvBindByName(column = "Rulings")
-    @Column(name = "RULINGS")
+    @Column(name = "RULINGS", columnDefinition = "TEXT")
     @JsonProperty("rulings")
+    @Nullable
     private String rulings;
 
-//    @CsvBindByName(column = "Reference to ISIC Rev. 4")
     @Column(name = "REF_ISIC")
     @JsonProperty("ref-isic-rev-4")
+    @Nullable
     private String reference;
 
 }

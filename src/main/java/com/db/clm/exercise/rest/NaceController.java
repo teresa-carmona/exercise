@@ -34,7 +34,7 @@ public class NaceController {
 
     @Operation(summary = "Gets NACE details from code")
     @GetMapping("/{id}")
-    public ResponseEntity<Nace> getNaceDetails(@PathVariable String id) {
+    public ResponseEntity<Nace> getNaceDetails(@PathVariable int id) {
         Nace nace = naceService.readNace(id);
         if (nace == null) {
             return ResponseEntity.notFound().build();
