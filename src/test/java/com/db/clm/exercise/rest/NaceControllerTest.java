@@ -80,6 +80,6 @@ class NaceControllerTest {
                 .andExpect(status().isOk());
 
         // Verify the service was called
-        verify(naceService).saveFromCsv(eq(mockFile));
+        verify(naceService).saveFromExcel(eq(mockFile));
     }
 }

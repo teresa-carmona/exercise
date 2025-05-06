@@ -1,12 +1,17 @@
 package com.db.clm.exercise.service;
 
+import com.db.clm.exercise.exception.FileException;
 import com.db.clm.exercise.model.Nace;
 import com.db.clm.exercise.repository.NaceRepository;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 
 
 import java.io.*;
@@ -26,7 +31,7 @@ public class NaceService {
         char delimiter = detectSeparator(file.getInputStream());
 
         try (
-                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))
         ) {
             CsvToBean<Nace> csvToBean = new CsvToBeanBuilder<Nace>(reader)
                     .withType(Nace.class)
@@ -64,6 +69,11 @@ public class NaceService {
         return naceRepository.findById(id).orElse(null);
     }
 
+    public Page<Nace> readAll(Pageable pageable) {
+        return naceRepository.findAll(pageable);
+    }
+
+
 
     public char detectSeparator(InputStream inputStream) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -78,5 +88,53 @@ public class NaceService {
         }
     }
 
+
+    public void saveFromExcel(MultipartFile file) throws IOException {
+        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+            List<Nace> batch = new ArrayList<>(BATCH_SIZE);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) { // skip header
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                Nace nace = Nace.builder()
+                        .order(getCellValueString(row.getCell(0)))
+                        .level(getCellValueInt(row.getCell(1)))
+                        .code(getCellValueString(row.getCell(2)))
+                        .parent(getCellValueString(row.getCell(3)))
+                        .description(getCellValueString(row.getCell(4)))
+                        .includes(getCellValueString(row.getCell(5)))
+                        .alsoIncludes(getCellValueString(row.getCell(6)))
+                        .excludes(getCellValueString(row.getCell(7)))
+                        .rulings(getCellValueString(row.getCell(8)))
+                        .reference(getCellValueString(row.getCell(9)))
+                        .build();
+
+                batch.add(nace);
+
+                if (batch.size() >= BATCH_SIZE) {
+                    naceRepository.saveAll(batch);
+                    batch.clear();
+                }
+            }
+
+            if (!batch.isEmpty()) {
+                naceRepository.saveAll(batch);
+            }
+        }
+    }
+
+    private String getCellValueString(Cell cell) {
+        if (cell == null) return null;
+        if (CellType.STRING == cell.getCellType()) return cell.getStringCellValue().trim();
+        else throw new FileException("Expected cell type STRING but was " + cell.getCellType().toString());
+    }
+
+    private Integer getCellValueInt(Cell cell) {
+        if (cell == null) return null;
+        if (CellType.NUMERIC == cell.getCellType()) return (int) cell.getNumericCellValue();
+        else throw new FileException("Expected cell type NUMERIC but was " + cell.getCellType().toString());
+    }
 
 }
