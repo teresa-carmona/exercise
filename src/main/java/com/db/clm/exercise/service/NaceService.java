@@ -10,34 +10,60 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
 public class NaceService {
 
+    private static final int BATCH_SIZE = 500;
+
     @Autowired
     private NaceRepository naceRepository;
 
     public void saveFromCsv(MultipartFile file) throws Exception {
+        char delimiter = detectSeparator(file.getInputStream());
 
-        List<Nace> naceEntities = parseCSV(file);
-        naceRepository.saveAll(naceEntities);
+        try (
+                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+        ) {
+            CsvToBean<Nace> csvToBean = new CsvToBeanBuilder<Nace>(reader)
+                    .withType(Nace.class)
+                    .withSeparator(delimiter)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .withIgnoreQuotations(true)
+                    .build();
 
+            // Read csv line by line to avoid OOM errors processing large files
+            Iterator<Nace> iterator = csvToBean.iterator();
+
+            List<Nace> batch = new ArrayList<>();
+
+            while (iterator.hasNext()) {
+                batch.add(iterator.next());
+
+                // Save only in batches of size BATCH_SIZE
+                // to reduce the load in database operations for large files
+                if (batch.size() == BATCH_SIZE) {
+                    naceRepository.saveAll(batch);
+                    // Reset batch
+                    batch.clear();
+                }
+            }
+
+            // Save rest
+            if (!batch.isEmpty()) {
+                naceRepository.saveAll(batch);
+            }
+        }
     }
+
 
     public Nace readNace(String id) {
         return naceRepository.findById(id).orElse(null);
     }
 
-    public List<Nace> parseCSV(MultipartFile file) throws Exception {
-        char delimiter = detectSeparator(file.getInputStream());
-
-        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            CsvToBean<Nace> csvToBean = new CsvToBeanBuilder<Nace>(reader).withType(Nace.class).withSeparator(delimiter).withIgnoreQuotations(true).withIgnoreLeadingWhiteSpace(true).build();
-
-            return csvToBean.parse();
-        }
-    }
 
     public char detectSeparator(InputStream inputStream) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
