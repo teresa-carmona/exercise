@@ -21,7 +21,7 @@ public class NaceController {
     @Autowired
     private NaceService naceService;
 
-    @Operation(summary = "Persists data from a CSV file")
+    @Operation(summary = "Persists data from an Excel file")
     @PutMapping("/save")
     public ResponseEntity<String> putNaceDetails(@RequestParam("file") MultipartFile file) {
         try {
