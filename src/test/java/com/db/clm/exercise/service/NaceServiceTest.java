@@ -50,7 +50,7 @@ class NaceServiceTest {
     }
 
     @Test
-    void testSaveFromCsv_shouldParseAndSave() throws Exception {
+    void saveFromCsvTest() throws Exception {
         String csvContent = "Order, Level, Code, Parent, Description, This item includes, This item also includes," +
                 "This item excludes, Rulings, Reference to ISIC Rev. 4\n" +
                 "1, 1, 123, Parent, Test desc, Includes, Also includes, Excludes, Rulings, Ref";
@@ -116,4 +116,3 @@ class NaceServiceTest {
         return content.toString();
     }
 }
-
