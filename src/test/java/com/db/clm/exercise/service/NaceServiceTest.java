@@ -88,6 +88,31 @@ class NaceServiceTest {
         assertThat(nace.getDescription()).isEqualTo("Test desc");
     }
 
+    @Test
+    void detectSeparatorCommaTest() throws IOException {
+        // Use comma separator
+        String csvContent = prepareCsvContent(",");
+
+        detectSeparatorTest(csvContent, ',');
+    }
+
+    @Test
+    void detectSeparatorSemicolonTest() throws IOException {
+        // Use semicolon separator
+        String csvContent = prepareCsvContent(";");
+
+        detectSeparatorTest(csvContent, ';');
+    }
+
+    void detectSeparatorTest(String csvContent, char expectedSeparator) throws IOException {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "nace.csv", "text/csv", csvContent.getBytes()
+        );
+
+        char actualSeparator = naceService.detectSeparator(file.getInputStream());
+
+        assertThat(actualSeparator).isEqualTo(expectedSeparator);
+    }
 
 
     String prepareCsvContent(String separator) {
@@ -116,3 +141,4 @@ class NaceServiceTest {
         return content.toString();
     }
 }
+

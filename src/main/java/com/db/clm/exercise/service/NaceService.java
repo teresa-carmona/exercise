@@ -30,7 +30,26 @@ public class NaceService {
     }
 
     public List<Nace> parseCSV(MultipartFile file) throws Exception {
-        return null;
+        char delimiter = detectSeparator(file.getInputStream());
+
+        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            CsvToBean<Nace> csvToBean = new CsvToBeanBuilder<Nace>(reader).withType(Nace.class).withSeparator(delimiter).withIgnoreQuotations(true).withIgnoreLeadingWhiteSpace(true).build();
+
+            return csvToBean.parse();
+        }
+    }
+
+    public char detectSeparator(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String firstLine = reader.readLine();
+
+            if (firstLine == null) throw new IOException("Empty file!");
+
+            int commas = firstLine.split(",").length;
+            int semicolons = firstLine.split(";").length;
+
+            return semicolons > commas ? ';' : ',';  // choose the one that appears most
+        }
     }
 
 
