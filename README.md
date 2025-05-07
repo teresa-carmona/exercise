@@ -14,7 +14,7 @@ The solution can be run locally, and the **REST API is documented with Swagger**
 ## Provided Endpoints
 
 ### `PUT` `api/nace/save`
-- Accepts an **Excel file** and persists its NACE data into a **local database**.
+- Accepts an **Excel file** and persists its NACE data into a **local database** which can be accessed at [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 - Being a `PUT`:
   - **Creates** new resources if they don’t exist.
   - **Updates** existing rows if data already exists.
