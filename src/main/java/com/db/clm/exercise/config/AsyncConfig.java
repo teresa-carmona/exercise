@@ -11,13 +11,18 @@ import java.util.concurrent.Executor;
 @Configuration
 public class AsyncConfig {
 
+    private static final int CONCURRENT_THREADS = 4;
+    private static final int MAX_THREADS = 8;
+    private static final int QUEUE_CAPACITY = 100;
+    private static final String THREAD_NAME = "ExcelProcessing-";
+
     @Bean(name = "fileProcessingExecutor")
     public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);         // Número de hilos concurrentes
-        executor.setMaxPoolSize(8);          // Máximo de hilos si hay mucha carga
-        executor.setQueueCapacity(100);      // Cola para tareas pendientes
-        executor.setThreadNamePrefix("ExcelProc-");
+        executor.setCorePoolSize(CONCURRENT_THREADS);
+        executor.setMaxPoolSize(MAX_THREADS);
+        executor.setQueueCapacity(QUEUE_CAPACITY);
+        executor.setThreadNamePrefix(THREAD_NAME);
         executor.initialize();
         return executor;
     }
