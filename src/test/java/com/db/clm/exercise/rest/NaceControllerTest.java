@@ -14,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.ByteArrayInputStream;
@@ -95,8 +94,8 @@ class NaceControllerTest {
         mockMvc.perform(multipart("/api/nace/save")
                         .file(file)
                         .with(request -> { request.setMethod("PUT"); return request; }))
-                .andExpect(status().isOk());
+                .andExpect(status().isAccepted());
 
-        verify(naceService, times(1)).saveFromExcel(eq(file));
+        verify(naceService, times(1)).processExcelAsync(eq(file));
     }
 }
