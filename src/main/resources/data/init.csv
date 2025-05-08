@@ -1,3 +1,0 @@
-Order,Level,Code,Parent,Description,This item includes,This item also includes,Rulings,This item excludes,Reference to ISIC Rev. 4
-1,1,A,Section A,A description,Includes something,Also includes X,Ruling 1,Excludes Y,Ref1
-2,2,01,A,Agriculture,Agriculture desc,Also includes agriculture,Ruling 2,Excludes mining,Ref2
